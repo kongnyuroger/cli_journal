@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-import { Client } from "pg";
+import { Pool } from "pg";
 import * as readline from "readline/promises"
-import {stdin as input, stdout as output} from 'node:process'
+import {stdin as input, stdout as output} from 'node:process';
+
 
 
 const rl = readline.createInterface({input, output})
 
 
-const client = new Client({
+const pool = new Pool({
   user: "roger",
   host: "localhost",
   database: "journal_dev",
@@ -52,12 +53,11 @@ switch (command) {
   case '--help':
   case 'help':
     showHelp();
-    
     break;
 
-  case 'add':
-    await client.connect();
 
+  case 'add':
+  
     const text = 'INSERT INTO entries (title, body, tags) VALUES ($1, $2, $3) RETURNING *';
     const title = await rl.question(`title: `);
     const body = await rl.question(`body: `);
@@ -68,55 +68,51 @@ switch (command) {
       body,
       tags
     ];
-
-   const inserted = await client.query(text, [title,body,tags])
+   const inserted = await pool.query(text, [title,body,tags])
    console.log("Inserted row:", inserted.rows[0]);
-    await client.end();
     rl.close();
     break;
 
+
   case 'search':
-    await client.connect();
       if (argv[1] === "--keyword"){
-        const res =  await client.query('SELECT * FROM entries  WHERE body LIKE $1 OR title LIKE $2', [`%${argv[2]}%`, `%${argv[2]}%`]);
+        const res =  await pool.query('SELECT * FROM entries  WHERE body LIKE $1 OR title LIKE $2', [`%${argv[2]}%`, `%${argv[2]}%`]);
         console.log(res.rows)
       }
 
       if(argv[1] === "--tag"){
-        const res =  await client.query('SELECT * FROM entries  WHERE $1 = ANY(tags)', [argv[2]] );
+        const res =  await pool.query('SELECT * FROM entries  WHERE $1 = ANY(tags)', [argv[2]] );
         console.log(res.rows)
       }
     
       if(argv[1] === "--date"){
-        const res =  await client.query('SELECT * FROM entries  WHERE   Date(created_at) = $1', [argv[2]] );
+        const res =  await pool.query('SELECT * FROM entries  WHERE   Date(created_at) = $1', [argv[2]] );
         console.log(res.rows)
       }
       if (argv[1] === "--from" ) {
         const fromDate = argv[2]; 
         const toDate = argv[4];   
 
-        const res = await client.query(
+        const res = await pool.query(
           "SELECT * FROM entries WHERE date(created_at) BETWEEN $1 AND $2",
           [fromDate, toDate]
         );
 
         console.log(res.rows);
       }
-
-
-    client.end()
-    process.exit()
-    break;
-  case 'list':
-    await client.connect()
-    const res = await client.query('select * from entries order by created_at;')
-    console.log(res.rows)
-  
     
     break;
 
-  default:
-    console.error(`Unknown command: ${command}`);
-    showHelp();
-    process.exit(1);
+
+    case 'list':
+      await pool.connect()
+      const res = await pool.query('select * from entries order by created_at;')
+      console.log(res.rows)
+      break;
+
+
+    default:
+      console.error(`Unknown command: ${command}`);
+      showHelp();
+      process.exit(1);
 }
