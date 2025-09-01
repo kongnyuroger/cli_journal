@@ -3,10 +3,10 @@ import * as readline from "readline/promises"
 import {stdin as input, stdout as output} from 'node:process';
 import pool from "../db.js";
 
-const rl = readline.createInterface({input, output})
+
 
 const add = async() => {
-
+    const rl = readline.createInterface({input, output})
     const text = 'INSERT INTO entries (title, body, tags) VALUES ($1, $2, $3) RETURNING *';
     const title = await rl.question(`title: `);
     const body = await rl.question(`body: `);

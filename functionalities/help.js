@@ -7,6 +7,12 @@ journal search [options]  Search entries
 journal list [options]    List entries
 journal --help            Show this help
 journal
+journal delete [id]       delete using id
+journal update [id]       update using id
+journal archive [id]      archive using id
+journal unarchive [id]    unarchive using id
+journal list archive      list all archive
+
 Search options:
   --keyword <text>        Free-text search in title/body
   --tag <tag>             Filter by tag

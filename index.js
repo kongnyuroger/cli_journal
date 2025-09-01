@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-import pool from "./db.js";
-
 import showHelp from "./functionalities/help.js";
 import search_db from "./functionalities/search_db.js";
 import add from "./functionalities/addTo_db.js";
+import list from "./functionalities/list.js";
+import deleteRecode from "./functionalities/delete.js";
+import update from "./functionalities/update.js";
+import { archive , unArchive} from "./functionalities/archive.js";
+
 
 const argv = process.argv.slice(2);
 const command = argv[0];
@@ -22,16 +25,27 @@ switch (command) {
   case 'add':
       add()
       break;
+
   case 'search':
       search_db(argv)    
     break;
 
-
     case 'list':
-      const res = await pool.query('select * from entries order by created_at;')
-      console.log(res.rows)
+      list(argv)
       break;
-      
+
+    case 'delete':
+      deleteRecode(argv)
+      break;
+    case 'update':
+      update(argv)
+      break;
+    case "archive":
+      archive(argv)
+      break;
+    case "unarchive":
+      unArchive(argv)
+      break;
     default:
       console.error(`Unknown command: ${command}`);
       showHelp();
